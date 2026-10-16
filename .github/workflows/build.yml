@@ -1,0 +1,47 @@
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar python-for-android
+        run: pip install python-for-android==2026.5.9
+
+      - name: Compilar la APK
+        run: |
+          p4a apk \
+            --private . \
+            --package=com.milector.epub \
+            --name="LectorEPUB" \
+            --version=1.0 \
+            --bootstrap=sdl2 \
+            --requirements=python3,kivy,ebooklib \
+            --arch=arm64-v8a \
+            --android-api=33 \
+            --ndk-api=21 \
+            --permission=READ_EXTERNAL_STORAGE \
+            --release
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LectorEPUB-APK
+          path: __p4a__/dist/*.apk
+          retention-days: 30
